@@ -1,0 +1,2069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate 2D Physics Sandbox - All Features</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #0a0a1a;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 10px;
+        }
+        .main-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 1600px;
+        }
+        .container {
+            background: #12122a;
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.9);
+            border: 1px solid #2a2a4a;
+        }
+        canvas {
+            display: block;
+            border-radius: 8px;
+            cursor: grab;
+            background: #0a0a1a;
+            border: 2px solid #2a2a4a;
+        }
+        canvas:active { cursor: grabbing; }
+        
+        .controls {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .controls button, .controls select {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: white;
+            background: #2a2a4a;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+        }
+        .controls button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+        .controls button:active { transform: translateY(0px); }
+        .controls select { background: #2a2a4a; cursor: pointer; }
+        
+        .btn-circle { background: #e94560; }
+        .btn-circle:hover { background: #ff6b81; }
+        .btn-rect { background: #4ecdc4; }
+        .btn-rect:hover { background: #6ee6dd; }
+        .btn-triangle { background: #fdcb6e; color: #1a1a2e; }
+        .btn-triangle:hover { background: #ffe07a; }
+        .btn-soft { background: #a29bfe; }
+        .btn-soft:hover { background: #b8b2ff; }
+        .btn-magnet { background: #fd79a8; }
+        .btn-magnet:hover { background: #ff8ab8; }
+        .btn-chain { background: #00cec9; }
+        .btn-chain:hover { background: #00e6e0; }
+        .btn-turret { background: #e17055; }
+        .btn-turret:hover { background: #f08166; }
+        .btn-ragdoll { background: #6c5ce7; }
+        .btn-ragdoll:hover { background: #7c6cf7; }
+        .btn-spring { background: #00b894; }
+        .btn-spring:hover { background: #00d2a0; }
+        .btn-gravity-well { background: #fd79a8; }
+        .btn-gravity-well:hover { background: #ff8ab8; }
+        .btn-explode { background: #ffd93d; color: #1a1a2e; }
+        .btn-explode:hover { background: #ffe66d; }
+        .btn-gravity { background: #00b894; }
+        .btn-gravity:hover { background: #00d2a0; }
+        .btn-wind { background: #74b9ff; }
+        .btn-wind:hover { background: #8ec9ff; }
+        .btn-draw { background: #6c5ce7; }
+        .btn-draw:hover { background: #7c6cf7; }
+        .btn-freehand { background: #fd79a8; }
+        .btn-freehand:hover { background: #ff8ab8; }
+        .btn-clear { background: #ff6b6b; }
+        .btn-clear:hover { background: #ff8a8a; }
+        .btn-reset { background: #4a6fa5; }
+        .btn-reset:hover { background: #5a8fc5; }
+        .btn-save { background: #00cec9; }
+        .btn-save:hover { background: #00e6e0; }
+        .btn-load { background: #a29bfe; }
+        .btn-load:hover { background: #b8b2ff; }
+        .btn-export { background: #fdcb6e; color: #1a1a2e; }
+        .btn-export:hover { background: #ffe07a; }
+        
+        .sidebar {
+            background: #12122a;
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.9);
+            border: 1px solid #2a2a4a;
+            width: 280px;
+            min-width: 240px;
+            max-height: 750px;
+            overflow-y: auto;
+        }
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-track { background: #1a1a3e; border-radius: 2px; }
+        .sidebar::-webkit-scrollbar-thumb { background: #2a2a4a; border-radius: 2px; }
+        
+        .sidebar h3 {
+            color: #e0e0ff;
+            font-size: 13px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #2a2a4a;
+            padding-bottom: 6px;
+        }
+        .sidebar label {
+            color: #a0a0c0;
+            font-size: 11px;
+            display: block;
+            margin: 4px 0 2px;
+        }
+        .sidebar input[type="range"] {
+            width: 100%;
+            margin: 2px 0 4px;
+            accent-color: #4ecdc4;
+        }
+        .sidebar .value-display {
+            color: #e0e0ff;
+            font-size: 11px;
+            float: right;
+        }
+        .sidebar .prop-group {
+            background: #1a1a3e;
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+        }
+        .sidebar .prop-group button {
+            width: 100%;
+            padding: 5px;
+            margin-top: 4px;
+            background: #4ecdc4;
+            border: none;
+            border-radius: 4px;
+            color: #1a1a2e;
+            font-weight: 600;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        .sidebar .prop-group button:hover { background: #6ee6dd; }
+        
+        .info {
+            color: #a0a0c0;
+            font-size: 11px;
+            margin-top: 8px;
+            text-align: center;
+            font-family: monospace;
+            padding: 5px 10px;
+            background: #1a1a3e;
+            border-radius: 5px;
+            border: 1px solid #2a2a4a;
+        }
+        .info span {
+            color: #e0e0ff;
+            margin: 0 3px;
+        }
+        .file-input-hidden { display: none; }
+        
+        .debug-panel {
+            margin-top: 6px;
+            padding: 6px;
+            background: #1a1a3e;
+            border-radius: 5px;
+            font-size: 10px;
+            color: #a0a0c0;
+            font-family: monospace;
+        }
+        .debug-panel div { margin: 1px 0; }
+        .debug-panel .value { color: #4ecdc4; }
+        
+        @media (max-width: 1200px) {
+            .sidebar { width: 100%; max-height: none; }
+            .main-container { flex-direction: column; align-items: center; }
+        }
+        @media (max-width: 800px) {
+            .container { padding: 8px; }
+            canvas { width: 100%; height: auto; }
+            .controls button { padding: 4px 8px; font-size: 9px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="container">
+            <canvas id="canvas" width="1100" height="650"></canvas>
+            <div class="controls">
+                <button class="btn-circle" onclick="addCircle()">⭕ Circle</button>
+                <button class="btn-rect" onclick="addRectangle()">⬜ Rect</button>
+                <button class="btn-triangle" onclick="addTriangle()">🔺 Tri</button>
+                <button class="btn-soft" onclick="addSoftBody()">🌀 Soft</button>
+                <button class="btn-magnet" onclick="addMagnet()">🧲 Magnet</button>
+                <button class="btn-chain" onclick="addChain()">⛓️ Chain</button>
+                <button class="btn-ragdoll" onclick="addRagdoll()">🦴 Ragdoll</button>
+                <button class="btn-turret" onclick="toggleTurret()">🎯 Turret</button>
+                <button class="btn-spring" onclick="addSpring()">〰️ Spring</button>
+                <button class="btn-gravity-well" onclick="addGravityWell()">🌀 Well</button>
+                <button class="btn-explode" onclick="explode()">💥 Boom</button>
+                <button class="btn-gravity" onclick="toggleGravity()">🌍 G</button>
+                <button class="btn-wind" onclick="toggleWind()">💨 Wind</button>
+                <button class="btn-draw" onclick="toggleDrawMode()">✏️ Draw</button>
+                <button class="btn-freehand" onclick="toggleFreehand()">🖌️ Free</button>
+                <button class="btn-clear" onclick="clearAll()">🗑️ Clear</button>
+                <button class="btn-reset" onclick="resetScene()">🔄 Reset</button>
+                <button class="btn-save" onclick="saveScene()">💾 Save</button>
+                <button class="btn-load" onclick="document.getElementById('fileInput').click()">📂 Load</button>
+                <button class="btn-export" onclick="exportGIF()">🎬 Export</button>
+                <input type="file" id="fileInput" class="file-input-hidden" accept=".json" onchange="loadScene(event)">
+            </div>
+            <div class="info">
+                <span>Shapes: <span id="shapeCount">0</span></span>
+                <span>|</span>
+                <span>FPS: <span id="fpsDisplay">60</span></span>
+                <span>|</span>
+                <span>Energy: <span id="energyDisplay">0</span></span>
+                <span>|</span>
+                <span>Score: <span id="scoreDisplay">0</span></span>
+                <span>|</span>
+                <span>⏱️ <span id="timeDisplay">1.0x</span></span>
+            </div>
+            <div class="debug-panel">
+                <div>KE: <span class="value" id="keDisplay">0</span> | 
+                Momentum: <span class="value" id="momentumDisplay">0</span> | 
+                Collisions: <span class="value" id="collisionDisplay">0</span> | 
+                Particles: <span class="value" id="particleDisplay">0</span></div>
+            </div>
+        </div>
+        
+        <div class="sidebar">
+            <h3>🎛️ Controls & Properties</h3>
+            
+            <div class="prop-group">
+                <label>Mass: <span class="value-display" id="massValue">1.0</span></label>
+                <input type="range" id="massSlider" min="0.1" max="10" step="0.1" value="1.0" oninput="document.getElementById('massValue').textContent=this.value">
+                <label>Bounciness: <span class="value-display" id="bounceValue">0.85</span></label>
+                <input type="range" id="bounceSlider" min="0" max="1" step="0.05" value="0.85" oninput="document.getElementById('bounceValue').textContent=this.value">
+                <label>Size: <span class="value-display" id="sizeValue">1.0</span></label>
+                <input type="range" id="sizeSlider" min="0.3" max="2" step="0.1" value="1.0" oninput="document.getElementById('sizeValue').textContent=this.value">
+                <label>Time Scale: <span class="value-display" id="timeValue">1.0x</span></label>
+                <input type="range" id="timeSlider" min="0" max="3" step="0.1" value="1.0" oninput="document.getElementById('timeValue').textContent=this.value+'x'; document.getElementById('timeDisplay').textContent=this.value+'x'; timeScale=parseFloat(this.value)">
+                <label>Gravity Strength: <span class="value-display" id="gravityValue">1.0</span></label>
+                <input type="range" id="gravitySlider" min="0" max="3" step="0.1" value="1.0" oninput="document.getElementById('gravityValue').textContent=this.value; gravityMultiplier=parseFloat(this.value)">
+                <button onclick="applyProperties()">Apply to Selected</button>
+            </div>
+            
+            <div class="prop-group">
+                <h3 style="color:#e0e0ff;font-size:11px;border:none;padding:0;margin:0 0 4px 0;">🎯 Targets</h3>
+                <button onclick="addTarget()" style="background:#ffd93d;color:#1a1a2e;">🎯 Add Target</button>
+                <button onclick="clearTargets()" style="background:#ff6b6b;color:white;margin-top:3px;">Clear Targets</button>
+            </div>
+            
+            <div class="prop-group">
+                <h3 style="color:#e0e0ff;font-size:11px;border:none;padding:0;margin:0 0 4px 0;">🎨 Visuals</h3>
+                <button onclick="toggleTrails()" style="background:#4ecdc4;color:#1a1a2e;">Trails: <span id="trailStatus">ON</span></button>
+                <button onclick="toggleGlow()" style="background:#a29bfe;color:#1a1a2e;margin-top:3px;">Glow: <span id="glowStatus">ON</span></button>
+                <button onclick="toggleGrid()" style="background:#fdcb6e;color:#1a1a2e;margin-top:3px;">Grid: <span id="gridStatus">ON</span></button>
+            </div>
+            
+            <div style="color:#a0a0c0;font-size:10px;margin-top:6px;text-align:center;border-top:1px solid #2a2a4a;padding-top:6px;">
+                Click shapes to select • Right-click to delete<br>
+                <span style="color:#4a4a6a;">Shortcuts: 1-9, Space, C, R, G, W, D, F, S</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // ============ CONSTANTS ============
+        const WIDTH = 1100;
+        const HEIGHT = 650;
+        const BASE_GRAVITY = 0.5;
+        const FRICTION = 0.995;
+        const GROUND_FRICTION = 0.95;
+        const RESTITUTION = 0.85;
+
+        // ============ STATE ============
+        let shapes = [];
+        let selectedShape = null;
+        let dragOffset = { x: 0, y: 0 };
+        let isDragging = false;
+        let gravityEnabled = true;
+        let gravityMultiplier = 1.0;
+        let windEnabled = false;
+        let windStrength = 0.05;
+        let mouseX = 0;
+        let mouseY = 0;
+        let timeScale = 1.0;
+        let shapeIdCounter = 0;
+        let collisionCount = 0;
+        let score = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = performance.now();
+        let showTrails = true;
+        let showGlow = true;
+        let showGrid = true;
+        let drawMode = false;
+        let drawStartX = 0;
+        let drawStartY = 0;
+        let isDrawing = false;
+        let freehandMode = false;
+        let freehandPoints = [];
+        let turretEnabled = false;
+        let turret = null;
+        let turretCooldown = 0;
+        
+        // ============ COLLECTIONS ============
+        let softBodies = [];
+        let magnets = [];
+        let targets = [];
+        let springs = [];
+        let gravityWells = [];
+        let ragdolls = [];
+        let fluidParticles = [];
+        let windParticles = [];
+        let sparkParticles = [];
+        let trails = [];
+        let chains = [];
+
+        // ============ COLORS ============
+        const COLORS = [
+            '#e94560', '#4ecdc4', '#45b7d1', '#ffd93d', 
+            '#6c5ce7', '#fd79a8', '#00b894', '#fdcb6e',
+            '#e17055', '#00cec9', '#a29bfe', '#ff7675',
+            '#55efc4', '#f8a5c2', '#74b9ff', '#ffeaa7'
+        ];
+
+        // ============ CLASSES ============
+        class Vector2 {
+            constructor(x, y) { this.x = x; this.y = y; }
+            add(v) { return new Vector2(this.x + v.x, this.y + v.y); }
+            sub(v) { return new Vector2(this.x - v.x, this.y - v.y); }
+            scale(s) { return new Vector2(this.x * s, this.y * s); }
+            mag() { return Math.sqrt(this.x*this.x + this.y*this.y); }
+            normalize() { const m = this.mag(); return m > 0 ? new Vector2(this.x/m, this.y/m) : new Vector2(0,0); }
+            dot(v) { return this.x * v.x + this.y * v.y; }
+        }
+
+        class Shape {
+            constructor(x, y, mass = 1, color = null) {
+                this.id = shapeIdCounter++;
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 4;
+                this.vy = (Math.random() - 0.5) * 4 - 2;
+                this.mass = mass;
+                this.color = color || COLORS[Math.floor(Math.random() * COLORS.length)];
+                this.isStatic = false;
+                this.elasticity = RESTITUTION;
+                this.rotation = 0;
+                this.angularVelocity = 0;
+                this.trail = [];
+                this.maxTrail = 20;
+                this.alive = true;
+            }
+
+            applyGravity() {
+                if (!this.isStatic && gravityEnabled) {
+                    this.vy += BASE_GRAVITY * gravityMultiplier;
+                }
+            }
+
+            applyFriction() {
+                if (!this.isStatic) {
+                    this.vx *= FRICTION;
+                    this.vy *= FRICTION;
+                }
+            }
+
+            applyWind() {
+                if (!this.isStatic && windEnabled) {
+                    const windX = Math.sin(Date.now() / 2000) * windStrength;
+                    this.vx += windX;
+                }
+            }
+
+            update() {
+                if (!this.isStatic && this.alive) {
+                    this.x += this.vx * timeScale;
+                    this.y += this.vy * timeScale;
+                    this.rotation += this.angularVelocity * timeScale;
+                    this.angularVelocity *= 0.99;
+                    
+                    if (showTrails && (this.vx*this.vx + this.vy*this.vy) > 0.3) {
+                        this.trail.push({x: this.x, y: this.y});
+                        if (this.trail.length > this.maxTrail) this.trail.shift();
+                    }
+                }
+            }
+
+            getBounds() {
+                return { x: this.x - 10, y: this.y - 10, width: 20, height: 20 };
+            }
+
+            containsPoint(px, py) { return false; }
+        }
+
+        class Circle extends Shape {
+            constructor(x, y, radius, color = null) {
+                super(x, y, radius * 0.08, color);
+                this.radius = radius;
+                this.mass = radius * 0.08;
+                this.type = 'circle';
+            }
+
+            containsPoint(px, py) {
+                const dx = px - this.x, dy = py - this.y;
+                return (dx*dx + dy*dy) <= (this.radius * this.radius);
+            }
+
+            draw(ctx) {
+                // Trail
+                if (showTrails && this.trail.length > 2) {
+                    ctx.beginPath();
+                    ctx.moveTo(this.trail[0].x, this.trail[0].y);
+                    for (let i = 1; i < this.trail.length; i++) {
+                        ctx.lineTo(this.trail[i].x, this.trail[i].y);
+                    }
+                    ctx.strokeStyle = this.color + '40';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+
+                // Glow
+                if (showGlow) {
+                    const glow = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius * 2.5);
+                    glow.addColorStop(0, this.color + '30');
+                    glow.addColorStop(1, 'transparent');
+                    ctx.fillStyle = glow;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius * 2.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Shadow
+                ctx.beginPath();
+                ctx.arc(this.x + 3, this.y + 3, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                ctx.fill();
+
+                // Main
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.strokeStyle = '#2a2a4a';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Highlight
+                const grad = ctx.createRadialGradient(
+                    this.x - this.radius*0.3, this.y - this.radius*0.3, 0,
+                    this.x - this.radius*0.3, this.y - this.radius*0.3, this.radius*0.6
+                );
+                grad.addColorStop(0, 'rgba(255,255,255,0.25)');
+                grad.addColorStop(1, 'rgba(255,255,255,0)');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.fill();
+            }
+
+            getBounds() {
+                return { x: this.x - this.radius, y: this.y - this.radius, width: this.radius*2, height: this.radius*2 };
+            }
+        }
+
+        class Rectangle extends Shape {
+            constructor(x, y, width, height, color = null) {
+                super(x, y, (width*height) * 0.01, color);
+                this.width = width;
+                this.height = height;
+                this.mass = (width*height) * 0.01;
+                this.type = 'rectangle';
+            }
+
+            getCorners() {
+                const cos = Math.cos(this.rotation), sin = Math.sin(this.rotation);
+                const hw = this.width/2, hh = this.height/2;
+                return [
+                    {x: this.x + (-hw*cos - -hh*sin), y: this.y + (-hw*sin + -hh*cos)},
+                    {x: this.x + (hw*cos - -hh*sin), y: this.y + (hw*sin + -hh*cos)},
+                    {x: this.x + (hw*cos - hh*sin), y: this.y + (hw*sin + hh*cos)},
+                    {x: this.x + (-hw*cos - hh*sin), y: this.y + (-hw*sin + hh*cos)}
+                ];
+            }
+
+            containsPoint(px, py) {
+                const dx = px - this.x, dy = py - this.y;
+                const cos = Math.cos(-this.rotation), sin = Math.sin(-this.rotation);
+                const localX = dx*cos - dy*sin, localY = dx*sin + dy*cos;
+                return Math.abs(localX) <= this.width/2 && Math.abs(localY) <= this.height/2;
+            }
+
+            draw(ctx) {
+                if (showTrails && this.trail.length > 2) {
+                    ctx.beginPath();
+                    ctx.moveTo(this.trail[0].x, this.trail[0].y);
+                    for (let i = 1; i < this.trail.length; i++) {
+                        ctx.lineTo(this.trail[i].x, this.trail[i].y);
+                    }
+                    ctx.strokeStyle = this.color + '40';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+
+                if (showGlow) {
+                    const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, Math.max(this.width, this.height));
+                    glow.addColorStop(0, this.color + '30');
+                    glow.addColorStop(1, 'transparent');
+                    ctx.fillStyle = glow;
+                    ctx.fillRect(-this.width, -this.height, this.width*2, this.height*2);
+                }
+
+                ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                ctx.shadowBlur = 10;
+                ctx.shadowOffsetX = 3;
+                ctx.shadowOffsetY = 3;
+
+                const hw = this.width/2, hh = this.height/2;
+                ctx.fillStyle = this.color;
+                ctx.fillRect(-hw, -hh, this.width, this.height);
+                ctx.shadowColor = 'transparent';
+                ctx.strokeStyle = '#2a2a4a';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(-hw, -hh, this.width, this.height);
+
+                const grad = ctx.createLinearGradient(-hw, -hh, -hw + this.width*0.3, -hh + this.height*0.3);
+                grad.addColorStop(0, 'rgba(255,255,255,0.2)');
+                grad.addColorStop(1, 'rgba(255,255,255,0)');
+                ctx.fillStyle = grad;
+                ctx.fillRect(-hw, -hh, this.width, this.height);
+
+                ctx.restore();
+            }
+
+            getBounds() {
+                const corners = this.getCorners();
+                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                for (const c of corners) {
+                    minX = Math.min(minX, c.x); minY = Math.min(minY, c.y);
+                    maxX = Math.max(maxX, c.x); maxY = Math.max(maxY, c.y);
+                }
+                return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+            }
+        }
+
+        class Triangle extends Shape {
+            constructor(x, y, size, color = null) {
+                super(x, y, size * 0.05, color);
+                this.size = size;
+                this.mass = size * 0.05;
+                this.type = 'triangle';
+                this.vertices = [
+                    {x: 0, y: -size},
+                    {x: -size*0.866, y: size*0.5},
+                    {x: size*0.866, y: size*0.5}
+                ];
+            }
+
+            getWorldVertices() {
+                const cos = Math.cos(this.rotation), sin = Math.sin(this.rotation);
+                return this.vertices.map(v => ({
+                    x: this.x + v.x*cos - v.y*sin,
+                    y: this.y + v.x*sin + v.y*cos
+                }));
+            }
+
+            containsPoint(px, py) {
+                const verts = this.getWorldVertices();
+                const d1 = sign(px, py, verts[0].x, verts[0].y, verts[1].x, verts[1].y);
+                const d2 = sign(px, py, verts[1].x, verts[1].y, verts[2].x, verts[2].y);
+                const d3 = sign(px, py, verts[2].x, verts[2].y, verts[0].x, verts[0].y);
+                const hasNeg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+                const hasPos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+                return !(hasNeg && hasPos);
+            }
+
+            draw(ctx) {
+                const verts = this.getWorldVertices();
+                
+                if (showTrails && this.trail.length > 2) {
+                    ctx.beginPath();
+                    ctx.moveTo(this.trail[0].x, this.trail[0].y);
+                    for (let i = 1; i < this.trail.length; i++) {
+                        ctx.lineTo(this.trail[i].x, this.trail[i].y);
+                    }
+                    ctx.strokeStyle = this.color + '40';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+
+                ctx.beginPath();
+                ctx.moveTo(verts[0].x, verts[0].y);
+                ctx.lineTo(verts[1].x, verts[1].y);
+                ctx.lineTo(verts[2].x, verts[2].y);
+                ctx.closePath();
+                
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.strokeStyle = '#2a2a4a';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            getBounds() {
+                const verts = this.getWorldVertices();
+                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                for (const v of verts) {
+                    minX = Math.min(minX, v.x); minY = Math.min(minY, v.y);
+                    maxX = Math.max(maxX, v.x); maxY = Math.max(maxY, v.y);
+                }
+                return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+            }
+        }
+
+        function sign(px, py, x1, y1, x2, y2) {
+            return (px - x2) * (y1 - y2) - (x1 - x2) * (py - y2);
+        }
+
+        // ============ ADVANCED CLASSES ============
+
+        class Magnet extends Circle {
+            constructor(x, y, radius, strength = 1, repelling = false) {
+                super(x, y, radius, repelling ? '#ff6b6b' : '#4ecdc4');
+                this.strength = strength;
+                this.repelling = repelling;
+                this.isStatic = true;
+                this.mass = 1000;
+                this.pulse = 0;
+                this.type = 'magnet';
+            }
+
+            draw(ctx) {
+                this.pulse += 0.05;
+                const pulseR = this.radius * (1 + Math.sin(this.pulse) * 0.1);
+
+                if (showGlow) {
+                    const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, pulseR * 2.5);
+                    grad.addColorStop(0, this.color + '40');
+                    grad.addColorStop(1, 'transparent');
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, pulseR * 2.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, pulseR, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.strokeStyle = '#2a2a4a';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                ctx.fillStyle = 'white';
+                ctx.font = `${pulseR}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.repelling ? '⊖' : '⊕', this.x, this.y + 2);
+
+                ctx.strokeStyle = this.color + '30';
+                ctx.setLineDash([5, 5]);
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 150, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            attract(shapes) {
+                for (const shape of shapes) {
+                    if (shape === this || shape.isStatic || shape.type === 'target') continue;
+                    const dx = this.x - shape.x;
+                    const dy = this.y - shape.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < 150 && dist > 5) {
+                        const force = this.strength * (this.repelling ? -1 : 1) / (dist * 0.05 + 1);
+                        shape.vx += (dx / dist) * force * 0.3;
+                        shape.vy += (dy / dist) * force * 0.3;
+                    }
+                }
+            }
+        }
+
+        class SoftBody {
+            constructor(x, y, radius = 40, points = 10) {
+                this.points = [];
+                this.springs = [];
+                this.radius = radius;
+                this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+                this.x = x;
+                this.y = y;
+                this.vx = 0;
+                this.vy = 0;
+                this.isStatic = false;
+                this.type = 'softbody';
+                
+                for (let i = 0; i < points; i++) {
+                    const angle = (i / points) * Math.PI * 2;
+                    this.points.push({
+                        x: x + Math.cos(angle) * radius,
+                        y: y + Math.sin(angle) * radius,
+                        vx: 0, vy: 0,
+                        mass: 1
+                    });
+                }
+                
+                for (let i = 0; i < this.points.length; i++) {
+                    const next = (i + 1) % this.points.length;
+                    const dx = this.points[i].x - this.points[next].x;
+                    const dy = this.points[i].y - this.points[next].y;
+                    this.springs.push({ a: i, b: next, length: Math.sqrt(dx*dx + dy*dy), stiffness: 0.08 });
+                }
+            }
+            
+            update() {
+                if (this.isStatic) return;
+                
+                for (const p of this.points) {
+                    if (gravityEnabled) p.vy += BASE_GRAVITY * gravityMultiplier * 0.3;
+                    p.x += p.vx * timeScale;
+                    p.y += p.vy * timeScale;
+                    p.vx *= 0.99;
+                    p.vy *= 0.99;
+                }
+                
+                for (const spring of this.springs) {
+                    const p1 = this.points[spring.a];
+                    const p2 = this.points[spring.b];
+                    const dx = p2.x - p1.x;
+                    const dy = p2.y - p1.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist === 0) continue;
+                    const force = (dist - spring.length) * spring.stiffness;
+                    const nx = dx / dist;
+                    const ny = dy / dist;
+                    p1.vx += nx * force / p1.mass;
+                    p1.vy += ny * force / p1.mass;
+                    p2.vx -= nx * force / p2.mass;
+                    p2.vy -= ny * force / p2.mass;
+                }
+                
+                for (const p of this.points) {
+                    if (p.x < 0) { p.x = 0; p.vx = -p.vx * 0.5; }
+                    if (p.x > WIDTH) { p.x = WIDTH; p.vx = -p.vx * 0.5; }
+                    if (p.y < 0) { p.y = 0; p.vy = -p.vy * 0.5; }
+                    if (p.y > HEIGHT) { p.y = HEIGHT; p.vy = -p.vy * 0.5; }
+                }
+                
+                let cx = 0, cy = 0;
+                for (const p of this.points) {
+                    cx += p.x;
+                    cy += p.y;
+                }
+                this.x = cx / this.points.length;
+                this.y = cy / this.points.length;
+            }
+            
+            draw(ctx) {
+                for (const spring of this.springs) {
+                    const p1 = this.points[spring.a];
+                    const p2 = this.points[spring.b];
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.strokeStyle = this.color + '40';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+                
+                ctx.beginPath();
+                ctx.moveTo(this.points[0].x, this.points[0].y);
+                for (let i = 1; i < this.points.length; i++) {
+                    ctx.lineTo(this.points[i].x, this.points[i].y);
+                }
+                ctx.closePath();
+                ctx.fillStyle = this.color + '50';
+                ctx.fill();
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                for (const p of this.points) {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                }
+            }
+        }
+
+        class Spring {
+            constructor(shape1, shape2, restLength = null, stiffness = 0.1) {
+                this.shape1 = shape1;
+                this.shape2 = shape2;
+                this.restLength = restLength || this.getDistance();
+                this.stiffness = stiffness;
+                this.color = '#a29bfe';
+                this.type = 'spring';
+            }
+            
+            getDistance() {
+                const dx = this.shape2.x - this.shape1.x;
+                const dy = this.shape2.y - this.shape1.y;
+                return Math.sqrt(dx*dx + dy*dy);
+            }
+            
+            update() {
+                const dx = this.shape2.x - this.shape1.x;
+                const dy = this.shape2.y - this.shape1.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist === 0) return;
+                const force = (dist - this.restLength) * this.stiffness;
+                const nx = dx / dist;
+                const ny = dy / dist;
+                this.shape1.vx += nx * force / this.shape1.mass;
+                this.shape1.vy += ny * force / this.shape1.mass;
+                this.shape2.vx -= nx * force / this.shape2.mass;
+                this.shape2.vy -= ny * force / this.shape2.mass;
+            }
+            
+            draw(ctx) {
+                ctx.beginPath();
+                ctx.moveTo(this.shape1.x, this.shape1.y);
+                ctx.lineTo(this.shape2.x, this.shape2.y);
+                ctx.strokeStyle = this.color + '60';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        }
+
+        class GravityWell {
+            constructor(x, y, strength = 0.5) {
+                this.x = x;
+                this.y = y;
+                this.strength = strength;
+                this.radius = 30;
+                this.color = '#fd79a8';
+                this.pulse = 0;
+                this.type = 'gravitywell';
+            }
+            
+            update(shapes) {
+                this.pulse += 0.03;
+                for (const shape of shapes) {
+                    if (shape.isStatic || shape.type === 'magnet' || shape.type === 'target') continue;
+                    const dx = this.x - shape.x;
+                    const dy = this.y - shape.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < 300 && dist > 5) {
+                        const force = this.strength / (dist * 0.05 + 1);
+                        shape.vx += (dx / dist) * force * 0.2;
+                        shape.vy += (dy / dist) * force * 0.2;
+                    }
+                }
+            }
+            
+            draw(ctx) {
+                const pulseR = this.radius * (1 + Math.sin(this.pulse) * 0.1);
+                
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, 300);
+                grad.addColorStop(0, 'rgba(253, 121, 168, 0.15)');
+                grad.addColorStop(0.5, 'rgba(253, 121, 168, 0.05)');
+                grad.addColorStop(1, 'transparent');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 300, 0, Math.PI * 2);
+                ctx.fill();
+                
+                for (let i = 0; i < 8; i++) {
+                    const angle = (i / 8) * Math.PI * 2 + this.pulse;
+                    const r = 30 + Math.sin(this.pulse * 2 + i) * 15;
+                    ctx.beginPath();
+                    ctx.arc(this.x + Math.cos(angle) * r, this.y + Math.sin(angle) * r, 3, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                }
+                
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, pulseR, 0, Math.PI * 2);
+                ctx.strokeStyle = this.color + '60';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                ctx.fillStyle = this.color;
+                ctx.font = '20px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('🌀', this.x, this.y + 2);
+            }
+        }
+
+        class Target extends Circle {
+            constructor(x, y, radius) {
+                super(x, y, radius, '#ffd93d');
+                this.isTarget = true;
+                this.hit = false;
+                this.isStatic = true;
+                this.type = 'target';
+                this.pulse = 0;
+            }
+            
+            draw(ctx) {
+                this.pulse += 0.03;
+                const pulse = 1 + Math.sin(this.pulse) * 0.05;
+                const r = this.radius * pulse;
+                
+                if (showGlow) {
+                    const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, r * 2.5);
+                    grad.addColorStop(0, '#ffd93d40');
+                    grad.addColorStop(1, 'transparent');
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, r * 2.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, r, 0, Math.PI * 2);
+                ctx.fillStyle = this.hit ? '#6c5ce7' : '#ffd93d';
+                ctx.fill();
+                ctx.strokeStyle = '#2a2a4a';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, r * 0.6, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, r * 0.3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.fill();
+            }
+        }
+
+        class Turret {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.angle = 0;
+                this.shootCooldown = 0;
+                this.target = null;
+                this.type = 'turret';
+                this.color = '#e17055';
+                this.shootSpeed = 8;
+                this.bullets = [];
+            }
+            
+            update() {
+                if (this.shootCooldown > 0) this.shootCooldown--;
+                
+                let nearest = null;
+                let minDist = Infinity;
+                for (const shape of shapes) {
+                    if (shape.type === 'target' && !shape.hit) {
+                        const dx = shape.x - this.x;
+                        const dy = shape.y - this.y;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        if (dist < minDist) {
+                            minDist = dist;
+                            nearest = shape;
+                        }
+                    }
+                }
+                this.target = nearest;
+                
+                if (this.target) {
+                    const dx = this.target.x - this.x;
+                    const dy = this.target.y - this.y;
+                    this.angle = Math.atan2(dy, dx);
+                }
+                
+                if (this.target && this.shootCooldown === 0 && turretEnabled) {
+                    this.shoot();
+                    this.shootCooldown = 15;
+                }
+                
+                // Update bullets
+                for (let i = this.bullets.length - 1; i >= 0; i--) {
+                    const b = this.bullets[i];
+                    b.x += b.vx;
+                    b.y += b.vy;
+                    b.life--;
+                    if (b.x < 0 || b.x > WIDTH || b.y < 0 || b.y > HEIGHT || b.life <= 0) {
+                        this.bullets.splice(i, 1);
+                    }
+                }
+            }
+            
+            shoot() {
+                const circle = new Circle(this.x, this.y, 5, '#ff6b6b');
+                circle.vx = Math.cos(this.angle) * this.shootSpeed;
+                circle.vy = Math.sin(this.angle) * this.shootSpeed;
+                circle.mass = 0.5;
+                circle.elasticity = 0.3;
+                circle.isStatic = false;
+                this.bullets.push(circle);
+                shapes.push(circle);
+                spawnSpark(this.x, this.y, 10);
+            }
+            
+            draw(ctx) {
+                // Base
+                ctx.fillStyle = '#2a2a4a';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 18, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#4a4a6a';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Barrel
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                ctx.fillStyle = this.color;
+                ctx.fillRect(5, -3, 35, 6);
+                ctx.fillRect(33, -6, 10, 12);
+                ctx.restore();
+                
+                if (this.target && turretEnabled) {
+                    ctx.strokeStyle = 'rgba(255,100,100,0.15)';
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([5, 5]);
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y);
+                    ctx.lineTo(this.target.x, this.target.y);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+                
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 12, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#2a2a4a';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Turret indicator
+                ctx.fillStyle = turretEnabled ? '#4ecdc4' : '#ff6b6b';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y + 22, 4, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // ============ RAGDOLL ============
+        class Ragdoll {
+            constructor(x, y) {
+                this.parts = [];
+                this.joints = [];
+                this.x = x;
+                this.y = y;
+                this.color = '#6c5ce7';
+                this.type = 'ragdoll';
+                
+                // Create body parts
+                const head = new Circle(x, y - 70, 20, '#fd79a8');
+                const torso = new Rectangle(x, y - 30, 45, 50, '#6c5ce7');
+                const leftArm = new Rectangle(x - 35, y - 15, 18, 40, '#a29bfe');
+                const rightArm = new Rectangle(x + 35, y - 15, 18, 40, '#a29bfe');
+                const leftLeg = new Rectangle(x - 12, y + 30, 16, 45, '#a29bfe');
+                const rightLeg = new Rectangle(x + 12, y + 30, 16, 45, '#a29bfe');
+                
+                this.parts = [head, torso, leftArm, rightArm, leftLeg, rightLeg];
+                for (const part of this.parts) {
+                    shapes.push(part);
+                }
+                
+                // Add joint springs
+                this.joints.push(new Spring(head, torso, 40, 0.15));
+                this.joints.push(new Spring(torso, leftArm, 35, 0.12));
+                this.joints.push(new Spring(torso, rightArm, 35, 0.12));
+                this.joints.push(new Spring(torso, leftLeg, 40, 0.12));
+                this.joints.push(new Spring(torso, rightLeg, 40, 0.12));
+                this.joints.push(new Spring(leftArm, rightArm, 70, 0.05));
+                this.joints.push(new Spring(leftLeg, rightLeg, 24, 0.05));
+                
+                // Add to springs list
+                for (const joint of this.joints) {
+                    springs.push(joint);
+                }
+            }
+            
+            update() {
+                // Ragdoll parts update automatically via physics
+            }
+            
+            draw(ctx) {
+                // Draw connections
+                ctx.strokeStyle = this.color + '30';
+                ctx.lineWidth = 1;
+                for (const joint of this.joints) {
+                    ctx.beginPath();
+                    ctx.moveTo(joint.shape1.x, joint.shape1.y);
+                    ctx.lineTo(joint.shape2.x, joint.shape2.y);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        // ============ CHAIN ============
+        class Chain {
+            constructor(x, y, count = 8, length = 30) {
+                this.links = [];
+                this.count = count;
+                this.color = '#00cec9';
+                this.type = 'chain';
+                
+                for (let i = 0; i < count; i++) {
+                    const circle = new Circle(x + i * length, y + i * 5, 8, '#00cec9');
+                    if (i === 0) circle.isStatic = true;
+                    shapes.push(circle);
+                    this.links.push(circle);
+                }
+                
+                for (let i = 0; i < count - 1; i++) {
+                    const spring = new Spring(this.links[i], this.links[i+1], length, 0.15);
+                    springs.push(spring);
+                }
+                
+                chains.push(this);
+            }
+            
+            draw(ctx) {
+                ctx.strokeStyle = this.color + '30';
+                ctx.lineWidth = 2;
+                for (let i = 0; i < this.links.length - 1; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(this.links[i].x, this.links[i].y);
+                    ctx.lineTo(this.links[i+1].x, this.links[i+1].y);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        // ============ PARTICLE SYSTEMS ============
+        function spawnSpark(x, y, count = 20) {
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 1 + Math.random() * 3;
+                sparkParticles.push({
+                    x: x, y: y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed - 1,
+                    life: 20 + Math.random() * 20,
+                    radius: 1 + Math.random() * 2,
+                    color: `hsl(${30 + Math.random() * 30}, 100%, ${60 + Math.random() * 30}%)`
+                });
+            }
+        }
+
+        function spawnFluid(x, y, count = 20) {
+            for (let i = 0; i < count; i++) {
+                fluidParticles.push({
+                    x: x + (Math.random() - 0.5) * 30,
+                    y: y + (Math.random() - 0.5) * 30,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.5) * 6 - 2,
+                    life: 30 + Math.random() * 30,
+                    radius: 2 + Math.random() * 4,
+                    color: `hsl(${Math.random() * 60 + 10}, 80%, 60%)`
+                });
+            }
+        }
+
+        // ============ PHYSICS ENGINE ============
+        function getShapeAt(x, y) {
+            for (let i = shapes.length - 1; i >= 0; i--) {
+                if (shapes[i].containsPoint && shapes[i].containsPoint(x, y)) {
+                    return shapes[i];
+                }
+            }
+            return null;
+        }
+
+        function handleCollision(s1, s2) {
+            if (s1.isStatic && s2.isStatic) return false;
+            if (s1.type === 'softbody' || s2.type === 'softbody') return false;
+            if (s1.type === 'turret' || s2.type === 'turret') return false;
+
+            const dx = s2.x - s1.x;
+            const dy = s2.y - s1.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist === 0) return false;
+
+            let collided = false;
+
+            if (s1 instanceof Circle && s2 instanceof Circle) {
+                const minDist = s1.radius + s2.radius;
+                if (dist < minDist) {
+                    const nx = dx/dist, ny = dy/dist;
+                    const overlap = (minDist - dist) / 2;
+                    s1.x -= nx * overlap;
+                    s1.y -= ny * overlap;
+                    s2.x += nx * overlap;
+                    s2.y += ny * overlap;
+                    resolveCollision(s1, s2, nx, ny);
+                    collided = true;
+                }
+            } else if (s1 instanceof Circle && s2 instanceof Rectangle) {
+                collided = handleCircleRect(s1, s2);
+            } else if (s1 instanceof Rectangle && s2 instanceof Circle) {
+                collided = handleCircleRect(s2, s1);
+            } else if (s1 instanceof Triangle && s2 instanceof Circle) {
+                collided = handleTriangleCircle(s1, s2);
+            } else if (s1 instanceof Circle && s2 instanceof Triangle) {
+                collided = handleTriangleCircle(s2, s1);
+            }
+
+            return collided;
+        }
+
+        function handleCircleRect(circle, rect) {
+            const corners = rect.getCorners();
+            let closestX = corners[0].x, closestY = corners[0].y;
+            let minDist = Infinity;
+
+            for (const c of corners) {
+                const dx = circle.x - c.x, dy = circle.y - c.y;
+                const d = dx*dx + dy*dy;
+                if (d < minDist) { minDist = d; closestX = c.x; closestY = c.y; }
+            }
+
+            const dx = circle.x - closestX, dy = circle.y - closestY;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+
+            if (dist < circle.radius && dist > 0) {
+                const nx = dx/dist, ny = dy/dist;
+                const overlap = circle.radius - dist;
+                if (!circle.isStatic) { circle.x += nx * overlap; circle.y += ny * overlap; }
+                if (!rect.isStatic) { rect.x -= nx * overlap * 0.5; rect.y -= ny * overlap * 0.5; }
+                resolveCollision(circle, rect, nx, ny);
+                return true;
+            }
+            return false;
+        }
+
+        function handleTriangleCircle(triangle, circle) {
+            const verts = triangle.getWorldVertices();
+            let closestX = verts[0].x, closestY = verts[0].y;
+            let minDist = Infinity;
+
+            for (const v of verts) {
+                const dx = circle.x - v.x, dy = circle.y - v.y;
+                const d = dx*dx + dy*dy;
+                if (d < minDist) { minDist = d; closestX = v.x; closestY = v.y; }
+            }
+
+            const dx = circle.x - closestX, dy = circle.y - closestY;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+
+            if (dist < circle.radius && dist > 0) {
+                const nx = dx/dist, ny = dy/dist;
+                const overlap = circle.radius - dist;
+                if (!circle.isStatic) { circle.x += nx * overlap; circle.y += ny * overlap; }
+                if (!triangle.isStatic) { triangle.x -= nx * overlap * 0.5; triangle.y -= ny * overlap * 0.5; }
+                resolveCollision(circle, triangle, nx, ny);
+                return true;
+            }
+            return false;
+        }
+
+        function resolveCollision(s1, s2, nx, ny) {
+            if (s1.isStatic || s2.isStatic) return;
+
+            const dvx = s1.vx - s2.vx, dvy = s1.vy - s2.vy;
+            const dvn = dvx * nx + dvy * ny;
+            if (dvn > 0) return;
+
+            const totalMass = s1.mass + s2.mass;
+            const impulse = -(1 + s1.elasticity) * dvn / totalMass;
+
+            s1.vx += impulse * s2.mass * nx;
+            s1.vy += impulse * s2.mass * ny;
+            s2.vx -= impulse * s1.mass * nx;
+            s2.vy -= impulse * s1.mass * ny;
+
+            collisionCount++;
+            const speed = Math.abs(dvn);
+            if (speed > 0.5) {
+                spawnSpark((s1.x+s2.x)/2, (s1.y+s2.y)/2, Math.min(Math.floor(speed * 3), 15));
+            }
+        }
+
+        function handleBoundary(shape) {
+            if (shape.isStatic || !shape.alive) return;
+            if (shape.type === 'softbody' || shape.type === 'turret') return;
+
+            const bounds = shape.getBounds();
+
+            if (bounds.x < 0) {
+                shape.x += -bounds.x;
+                shape.vx = -shape.vx * shape.elasticity;
+                shape.vy *= GROUND_FRICTION;
+            }
+            if (bounds.x + bounds.width > WIDTH) {
+                shape.x -= (bounds.x + bounds.width - WIDTH);
+                shape.vx = -shape.vx * shape.elasticity;
+                shape.vy *= GROUND_FRICTION;
+            }
+            if (bounds.y < 0) {
+                shape.y += -bounds.y;
+                shape.vy = -shape.vy * shape.elasticity;
+                shape.vx *= GROUND_FRICTION;
+            }
+            if (bounds.y + bounds.height > HEIGHT) {
+                shape.y -= (bounds.y + bounds.height - HEIGHT);
+                shape.vy = -shape.vy * shape.elasticity;
+                shape.vx *= GROUND_FRICTION;
+                if (shape instanceof Circle) {
+                    shape.angularVelocity += shape.vx * 0.01;
+                }
+            }
+        }
+
+        function updatePhysics() {
+            // Update shapes
+            for (const shape of shapes) {
+                shape.applyGravity();
+                shape.applyFriction();
+                shape.applyWind();
+                shape.update();
+            }
+            
+            // Update soft bodies
+            for (const body of softBodies) {
+                body.update();
+            }
+            
+            // Update springs
+            for (const spring of springs) {
+                spring.update();
+            }
+            
+            // Update magnets
+            for (const magnet of magnets) {
+                magnet.attract(shapes);
+            }
+            
+            // Update gravity wells
+            for (const well of gravityWells) {
+                well.update(shapes);
+            }
+            
+            // Update turret
+            if (turret) turret.update();
+            
+            // Shape collisions
+            for (let i = 0; i < shapes.length; i++) {
+                for (let j = i + 1; j < shapes.length; j++) {
+                    if (handleCollision(shapes[i], shapes[j])) {
+                        // Check if target was hit
+                        checkTargetHit(shapes[i], shapes[j]);
+                    }
+                }
+            }
+            
+            // Boundary collisions
+            for (const shape of shapes) {
+                handleBoundary(shape);
+            }
+            
+            // Update particles
+            updateParticles();
+        }
+
+        function checkTargetHit(s1, s2) {
+            for (const target of targets) {
+                if (target.hit) continue;
+                if ((s1 === target && !s2.isStatic) || (s2 === target && !s1.isStatic)) {
+                    target.hit = true;
+                    score += 10;
+                    spawnSpark(target.x, target.y, 30);
+                    spawnFluid(target.x, target.y, 20);
+                    document.getElementById('scoreDisplay').textContent = score;
+                    setTimeout(() => {
+                        const idx = targets.indexOf(target);
+                        if (idx > -1) {
+                            targets.splice(idx, 1);
+                            const shapeIdx = shapes.indexOf(target);
+                            if (shapeIdx > -1) shapes.splice(shapeIdx, 1);
+                        }
+                    }, 300);
+                }
+            }
+        }
+
+        function updateParticles() {
+            // Fluid
+            for (let i = fluidParticles.length - 1; i >= 0; i--) {
+                const p = fluidParticles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.05;
+                p.life--;
+                if (p.life <= 0 || p.y > HEIGHT) fluidParticles.splice(i, 1);
+            }
+            
+            // Sparks
+            for (let i = sparkParticles.length - 1; i >= 0; i--) {
+                const p = sparkParticles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.02;
+                p.life--;
+                if (p.life <= 0) sparkParticles.splice(i, 1);
+            }
+            
+            // Wind
+            if (windEnabled) {
+                if (Math.random() < 0.2) {
+                    windParticles.push({
+                        x: -10,
+                        y: Math.random() * HEIGHT,
+                        life: 100 + Math.random() * 100,
+                        speed: 1 + Math.random() * 2,
+                        size: 1 + Math.random() * 3
+                    });
+                }
+                for (let i = windParticles.length - 1; i >= 0; i--) {
+                    const p = windParticles[i];
+                    p.x += p.speed + Math.sin(Date.now()/2000 + p.y) * 0.5;
+                    p.life--;
+                    if (p.x > WIDTH + 20 || p.life <= 0) windParticles.splice(i, 1);
+                }
+            }
+        }
+
+        // ============ DRAWING ============
+        function drawGrid() {
+            if (!showGrid) return;
+            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x <= WIDTH; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, HEIGHT);
+                ctx.stroke();
+            }
+            for (let y = 0; y <= HEIGHT; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(WIDTH, y);
+                ctx.stroke();
+            }
+        }
+
+        function drawParticles() {
+            // Fluid
+            for (const p of fluidParticles) {
+                const alpha = p.life / 60;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius * alpha, 0, Math.PI * 2);
+                ctx.fillStyle = p.color + Math.floor(alpha * 200).toString(16).padStart(2, '0');
+                ctx.fill();
+            }
+            
+            // Sparks
+            for (const p of sparkParticles) {
+                const alpha = p.life / 40;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius * alpha, 0, Math.PI * 2);
+                ctx.fillStyle = p.color + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+                ctx.fill();
+            }
+            
+            // Wind
+            if (windEnabled) {
+                for (const p of windParticles) {
+                    const alpha = p.life / 200;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size * alpha, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(200, 220, 255, ${alpha * 0.3})`;
+                    ctx.fill();
+                }
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, WIDTH, HEIGHT);
+            
+            // Background
+            const grad = ctx.createLinearGradient(0, 0, 0, HEIGHT);
+            grad.addColorStop(0, '#0a0a1a');
+            grad.addColorStop(0.5, '#12122a');
+            grad.addColorStop(1, '#1a1a3e');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+            drawGrid();
+            drawParticles();
+
+            // Draw gravity wells
+            for (const well of gravityWells) {
+                well.draw(ctx);
+            }
+
+            // Draw targets
+            for (const target of targets) {
+                target.draw(ctx);
+            }
+
+            // Draw soft bodies
+            for (const body of softBodies) {
+                body.draw(ctx);
+            }
+
+            // Draw chains
+            for (const chain of chains) {
+                chain.draw(ctx);
+            }
+
+            // Draw magnets
+            for (const magnet of magnets) {
+                magnet.draw(ctx);
+            }
+
+            // Draw springs
+            for (const spring of springs) {
+                spring.draw(ctx);
+            }
+
+            // Draw turret
+            if (turret) turret.draw(ctx);
+
+            // Draw shapes
+            for (const shape of shapes) {
+                if (shape.alive) shape.draw(ctx);
+            }
+
+            // Draw draw mode preview
+            if (drawMode && isDrawing) {
+                ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([5, 5]);
+                ctx.strokeRect(
+                    Math.min(drawStartX, mouseX),
+                    Math.min(drawStartY, mouseY),
+                    Math.abs(mouseX - drawStartX),
+                    Math.abs(mouseY - drawStartY)
+                );
+                ctx.setLineDash([]);
+            }
+
+            // Freehand preview
+            if (freehandMode && freehandPoints.length > 1) {
+                ctx.beginPath();
+                ctx.moveTo(freehandPoints[0].x, freehandPoints[0].y);
+                for (let i = 1; i < freehandPoints.length; i++) {
+                    ctx.lineTo(freehandPoints[i].x, freehandPoints[i].y);
+                }
+                ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            // Highlight selected
+            if (selectedShape && !isDragging) {
+                const bounds = selectedShape.getBounds();
+                ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.strokeRect(bounds.x - 4, bounds.y - 4, bounds.width + 8, bounds.height + 8);
+                ctx.setLineDash([]);
+            }
+
+            // Update UI
+            document.getElementById('shapeCount').textContent = shapes.length + softBodies.length;
+            document.getElementById('particleDisplay').textContent = fluidParticles.length + sparkParticles.length;
+            
+            let energy = 0, momentum = 0;
+            for (const shape of shapes) {
+                const speed = Math.sqrt(shape.vx*shape.vx + shape.vy*shape.vy);
+                energy += 0.5 * shape.mass * speed * speed;
+                momentum += shape.mass * speed;
+            }
+            document.getElementById('energyDisplay').textContent = energy.toFixed(1);
+            document.getElementById('keDisplay').textContent = energy.toFixed(1);
+            document.getElementById('momentumDisplay').textContent = momentum.toFixed(1);
+            document.getElementById('collisionDisplay').textContent = collisionCount;
+        }
+
+        // ============ UI ACTIONS ============
+        function addCircle() {
+            const size = parseFloat(document.getElementById('sizeSlider').value);
+            const radius = (15 + Math.random() * 30) * size;
+            const x = Math.random() * (WIDTH - 100) + 50;
+            const y = Math.random() * (HEIGHT - 200) + 50;
+            const circle = new Circle(x, y, radius);
+            shapes.push(circle);
+            spawnFluid(x, y, 5);
+        }
+
+        function addRectangle() {
+            const size = parseFloat(document.getElementById('sizeSlider').value);
+            const w = (30 + Math.random() * 50) * size;
+            const h = (30 + Math.random() * 50) * size;
+            const x = Math.random() * (WIDTH - 100) + 50;
+            const y = Math.random() * (HEIGHT - 200) + 50;
+            const rect = new Rectangle(x, y, w, h);
+            shapes.push(rect);
+            spawnFluid(x, y, 5);
+        }
+
+        function addTriangle() {
+            const size = (30 + Math.random() * 40) * parseFloat(document.getElementById('sizeSlider').value);
+            const x = Math.random() * (WIDTH - 100) + 50;
+            const y = Math.random() * (HEIGHT - 200) + 50;
+            const tri = new Triangle(x, y, size);
+            shapes.push(tri);
+            spawnFluid(x, y, 5);
+        }
+
+        function addSoftBody() {
+            const x = Math.random() * (WIDTH - 200) + 100;
+            const y = Math.random() * (HEIGHT - 200) + 100;
+            const radius = (30 + Math.random() * 30) * parseFloat(document.getElementById('sizeSlider').value);
+            const points = 8 + Math.floor(Math.random() * 8);
+            softBodies.push(new SoftBody(x, y, radius, points));
+        }
+
+        function addMagnet() {
+            const x = Math.random() * (WIDTH - 100) + 50;
+            const y = Math.random() * (HEIGHT - 100) + 50;
+            const strength = 0.5 + Math.random() * 1.5;
+            const repelling = Math.random() > 0.5;
+            const magnet = new Magnet(x, y, 22, strength, repelling);
+            magnets.push(magnet);
+            shapes.push(magnet);
+        }
+
+        function addChain() {
+            const x = Math.random() * (WIDTH - 300) + 150;
+            const y = 50 + Math.random() * 50;
+            const count = 5 + Math.floor(Math.random() * 8);
+            new Chain(x, y, count, 30);
+        }
+
+        function addRagdoll() {
+            const x = Math.random() * (WIDTH - 200) + 100;
+            const y = Math.random() * (HEIGHT - 300) + 100;
+            new Ragdoll(x, y);
+        }
+
+        function addSpring() {
+            if (shapes.length < 2) {
+                addCircle();
+                addCircle();
+            }
+            const idx1 = Math.floor(Math.random() * shapes.length);
+            let idx2 = Math.floor(Math.random() * shapes.length);
+            while (idx2 === idx1) idx2 = Math.floor(Math.random() * shapes.length);
+            const spring = new Spring(shapes[idx1], shapes[idx2], null, 0.08);
+            springs.push(spring);
+        }
+
+        function addGravityWell() {
+            const x = Math.random() * (WIDTH - 100) + 50;
+            const y = Math.random() * (HEIGHT - 100) + 50;
+            gravityWells.push(new GravityWell(x, y, 0.3 + Math.random() * 0.5));
+        }
+
+        function addTarget() {
+            const x = Math.random() * (WIDTH - 80) + 40;
+            const y = Math.random() * (HEIGHT - 200) + 100;
+            const target = new Target(x, y, 20 + Math.random() * 15);
+            targets.push(target);
+            shapes.push(target);
+        }
+
+        function clearTargets() {
+            for (const target of targets) {
+                const idx = shapes.indexOf(target);
+                if (idx > -1) shapes.splice(idx, 1);
+            }
+            targets = [];
+            score = 0;
+            document.getElementById('scoreDisplay').textContent = '0';
+        }
+
+        function toggleTurret() {
+            turretEnabled = !turretEnabled;
+            if (turretEnabled && !turret) {
+                turret = new Turret(WIDTH / 2, 50);
+            }
+        }
+
+        function explode() {
+            const count = 40 + Math.floor(Math.random() * 30);
+            for (let i = 0; i < count; i++) {
+                const radius = (4 + Math.random() * 16) * parseFloat(document.getElementById('sizeSlider').value);
+                const x = Math.random() * (WIDTH - 40) + 20;
+                const y = Math.random() * (HEIGHT - 40) + 20;
+                const circle = new Circle(x, y, radius);
+                circle.vx = (Math.random() - 0.5) * 18;
+                circle.vy = (Math.random() - 0.5) * 18 - 5;
+                shapes.push(circle);
+            }
+            spawnFluid(WIDTH/2, HEIGHT/2, 60);
+            spawnSpark(WIDTH/2, HEIGHT/2, 50);
+        }
+
+        function clearAll() {
+            shapes = [];
+            softBodies = [];
+            magnets = [];
+            targets = [];
+            springs = [];
+            gravityWells = [];
+            chains = [];
+            fluidParticles = [];
+            sparkParticles = [];
+            windParticles = [];
+            selectedShape = null;
+            isDragging = false;
+            collisionCount = 0;
+            score = 0;
+            document.getElementById('scoreDisplay').textContent = '0';
+        }
+
+        function resetScene() {
+            clearAll();
+            // Add initial shapes
+            const colors = ['#e94560', '#4ecdc4', '#45b7d1', '#ffd93d', '#6c5ce7'];
+            for (let i = 0; i < 5; i++) {
+                const radius = 20 + Math.random() * 25;
+                const x = 150 + i * 170;
+                const y = 200 + Math.random() * 150;
+                const circle = new Circle(x, y, radius, colors[i]);
+                circle.vy = -(Math.random() * 2 + 1);
+                shapes.push(circle);
+            }
+            // Targets
+            for (let i = 0; i < 3; i++) {
+                const x = 200 + i * 280;
+                const y = 500 + Math.random() * 50;
+                const target = new Target(x, y, 20 + Math.random() * 10);
+                targets.push(target);
+                shapes.push(target);
+            }
+            // Magnets
+            const magnet1 = new Magnet(200, 100, 25, 0.8, false);
+            magnets.push(magnet1);
+            shapes.push(magnet1);
+            const magnet2 = new Magnet(900, 550, 25, 0.8, true);
+            magnets.push(magnet2);
+            shapes.push(magnet2);
+            // Soft body
+            softBodies.push(new SoftBody(550, 300, 35, 10));
+            // Chain
+            new Chain(300, 50, 6, 30);
+            // Turret
+            turret = new Turret(800, 60);
+            turretEnabled = true;
+        }
+
+        function toggleGravity() {
+            gravityEnabled = !gravityEnabled;
+            document.getElementById('gravityStatus').textContent = gravityEnabled ? '🌍 G:ON' : '🌍 G:OFF';
+        }
+
+        function toggleWind() {
+            windEnabled = !windEnabled;
+        }
+
+        function toggleDrawMode() {
+            drawMode = !drawMode;
+            if (drawMode) freehandMode = false;
+            document.getElementById('drawModeStatus').textContent = drawMode ? '✏️ ON' : '✏️ OFF';
+        }
+
+        function toggleFreehand() {
+            freehandMode = !freehandMode;
+            if (freehandMode) drawMode = false;
+            freehandPoints = [];
+            document.getElementById('freehandStatus').textContent = freehandMode ? '🖌️ ON' : '🖌️ OFF';
+        }
+
+        function toggleTrails() {
+            showTrails = !showTrails;
+            document.getElementById('trailStatus').textContent = showTrails ? 'ON' : 'OFF';
+        }
+
+        function toggleGlow() {
+            showGlow = !showGlow;
+            document.getElementById('glowStatus').textContent = showGlow ? 'ON' : 'OFF';
+        }
+
+        function toggleGrid() {
+            showGrid = !showGrid;
+            document.getElementById('gridStatus').textContent = showGrid ? 'ON' : 'OFF';
+        }
+
+        function applyProperties() {
+            if (!selectedShape) return;
+            const mass = parseFloat(document.getElementById('massSlider').value);
+            const bounce = parseFloat(document.getElementById('bounceSlider').value);
+            selectedShape.mass = mass;
+            selectedShape.elasticity = bounce;
+        }
+
+        function exportGIF() {
+            alert('Export feature would capture animation as GIF using a library like gif.js\nThis is a placeholder for the full implementation.');
+        }
+
+        // ============ SAVE/LOAD ============
+        function saveScene() {
+            const data = {
+                shapes: shapes.filter(s => s.type !== 'target' && s.type !== 'magnet').map(s => {
+                    if (s instanceof Circle) return { type: 'circle', x: s.x, y: s.y, vx: s.vx, vy: s.vy, radius: s.radius, color: s.color };
+                    if (s instanceof Rectangle) return { type: 'rect', x: s.x, y: s.y, vx: s.vx, vy: s.vy, width: s.width, height: s.height, color: s.color };
+                    if (s instanceof Triangle) return { type: 'triangle', x: s.x, y: s.y, vx: s.vx, vy: s.vy, size: s.size, color: s.color };
+                    return null;
+                }).filter(s => s !== null),
+                magnets: magnets.map(m => ({ x: m.x, y: m.y, radius: m.radius, strength: m.strength, repelling: m.repelling })),
+                targets: targets.map(t => ({ x: t.x, y: t.y, radius: t.radius })),
+                gravityWells: gravityWells.map(w => ({ x: w.x, y: w.y, strength: w.strength }))
+            };
+            
+            const json = JSON.stringify(data);
+            const blob = new Blob([json], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'physics_scene.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function loadScene(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    clearAll();
+                    
+                    for (const s of data.shapes || []) {
+                        if (s.type === 'circle') {
+                            const c = new Circle(s.x, s.y, s.radius, s.color);
+                            c.vx = s.vx || 0; c.vy = s.vy || 0;
+                            shapes.push(c);
+                        } else if (s.type === 'rect') {
+                            const r = new Rectangle(s.x, s.y, s.width, s.height, s.color);
+                            r.vx = s.vx || 0; r.vy = s.vy || 0;
+                            shapes.push(r);
+                        } else if (s.type === 'triangle') {
+                            const t = new Triangle(s.x, s.y, s.size, s.color);
+                            t.vx = s.vx || 0; t.vy = s.vy || 0;
+                            shapes.push(t);
+                        }
+                    }
+                    
+                    for (const m of data.magnets || []) {
+                        const magnet = new Magnet(m.x, m.y, m.radius, m.strength, m.repelling);
+                        magnets.push(magnet);
+                        shapes.push(magnet);
+                    }
+                    
+                    for (const t of data.targets || []) {
+                        const target = new Target(t.x, t.y, t.radius);
+                        targets.push(target);
+                        shapes.push(target);
+                    }
+                    
+                    for (const w of data.gravityWells || []) {
+                        gravityWells.push(new GravityWell(w.x, w.y, w.strength));
+                    }
+                } catch (error) {
+                    alert('Error loading scene');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // ============ EVENT HANDLERS ============
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+
+            if (e.button === 0) {
+                if (drawMode) {
+                    isDrawing = true;
+                    drawStartX = x;
+                    drawStartY = y;
+                    return;
+                }
+                
+                if (freehandMode) {
+                    freehandPoints.push({x, y});
+                    const circle = new Circle(x, y, 4 + Math.random() * 4);
+                    circle.isStatic = true;
+                    shapes.push(circle);
+                    return;
+                }
+                
+                const shape = getShapeAt(x, y);
+                if (shape) {
+                    selectedShape = shape;
+                    isDragging = true;
+                    dragOffset.x = shape.x - x;
+                    dragOffset.y = shape.y - y;
+                } else {
+                    selectedShape = null;
+                }
+            } else if (e.button === 2) {
+                const shape = getShapeAt(x, y);
+                if (shape) {
+                    const index = shapes.indexOf(shape);
+                    if (index > -1) shapes.splice(index, 1);
+                    const mIndex = magnets.indexOf(shape);
+                    if (mIndex > -1) magnets.splice(mIndex, 1);
+                    const tIndex = targets.indexOf(shape);
+                    if (tIndex > -1) targets.splice(tIndex, 1);
+                    if (selectedShape === shape) {
+                        selectedShape = null;
+                        isDragging = false;
+                    }
+                    spawnSpark(x, y, 10);
+                }
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            mouseX = (e.clientX - rect.left) * scaleX;
+            mouseY = (e.clientY - rect.top) * scaleY;
+
+            if (isDragging && selectedShape) {
+                selectedShape.x = mouseX + dragOffset.x;
+                selectedShape.y = mouseY + dragOffset.y;
+                selectedShape.vx *= 0.9;
+                selectedShape.vy *= 0.9;
+            }
+            
+            if (freehandMode && e.buttons === 1) {
+                freehandPoints.push({x: mouseX, y: mouseY});
+                if (freehandPoints.length % 3 === 0) {
+                    const circle = new Circle(mouseX, mouseY, 3 + Math.random() * 3);
+                    circle.isStatic = true;
+                    shapes.push(circle);
+                }
+            }
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (drawMode && isDrawing) {
+                const width = Math.abs(mouseX - drawStartX);
+                const height = Math.abs(mouseY - drawStartY);
+                if (width > 20 && height > 20) {
+                    const x = (drawStartX + mouseX) / 2;
+                    const y = (drawStartY + mouseY) / 2;
+                    const rect = new Rectangle(x, y, width, height);
+                    shapes.push(rect);
+                }
+                isDrawing = false;
+            }
+            isDragging = false;
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isDragging = false;
+            isDrawing = false;
+        });
+
+        canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '1') addCircle();
+            if (e.key === '2') addRectangle();
+            if (e.key === '3') addTriangle();
+            if (e.key === '4') addSoftBody();
+            if (e.key === '5') addMagnet();
+            if (e.key === '6') addChain();
+            if (e.key === '7') addRagdoll();
+            if (e.key === '8') addTarget();
+            if (e.key === '9') addGravityWell();
+            if (e.key === ' ') { e.preventDefault(); explode(); }
+            if (e.key === 'c' || e.key === 'C') clearAll();
+            if (e.key === 'r' || e.key === 'R') resetScene();
+            if (e.key === 'g' || e.key === 'G') toggleGravity();
+            if (e.key === 'w' || e.key === 'W') toggleWind();
+            if (e.key === 'd' || e.key === 'D') toggleDrawMode();
+            if (e.key === 'f' || e.key === 'F') toggleFreehand();
+            if (e.key === 't' || e.key === 'T') toggleTurret();
+            if (e.key === 's' || e.key === 'S') saveScene();
+            if (e.key === 'Delete' || e.key === 'Backspace') {
+                if (selectedShape) {
+                    const idx = shapes.indexOf(selectedShape);
+                    if (idx > -1) shapes.splice(idx, 1);
+                    const mIdx = magnets.indexOf(selectedShape);
+                    if (mIdx > -1) magnets.splice(mIdx, 1);
+                    const tIdx = targets.indexOf(selectedShape);
+                    if (tIdx > -1) targets.splice(tIdx, 1);
+                    selectedShape = null;
+                    spawnSpark(selectedShape ? selectedShape.x : 0, selectedShape ? selectedShape.y : 0, 10);
+                }
+            }
+        });
+
+        // ============ GAME LOOP ============
+        function gameLoop(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                document.getElementById('fpsDisplay').textContent = frameCount;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            updatePhysics();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // ============ INIT ============
+        resetScene();
+        requestAnimationFrame(gameLoop);
+    </script>
+</body>
+</html>
